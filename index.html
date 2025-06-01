@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Tracker - Pengelola Keuangan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .balance-display {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .transaction-form {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .transaction-form h3 {
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .transaction-history {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .transaction-history h3 {
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .transaction-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-desc {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+
+        .transaction-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .amount-negative {
+            color: #ef4444;
+        }
+
+        .amount-positive {
+            color: #10b981;
+        }
+
+        .setup-screen {
+            text-align: center;
+        }
+
+        .setup-screen h2 {
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .setup-screen p {
+            margin-bottom: 30px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .expense-stat {
+            color: #ef4444;
+        }
+
+        .income-stat {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Money Tracker</h1>
+            <div class="balance-display">
+                <div class="balance-amount" id="balanceAmount">Rp 0</div>
+                <div class="balance-label">Saldo Saat Ini</div>
+            </div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="content setup-screen">
+            <h2>Selamat Datang!</h2>
+            <p>Untuk memulai, masukkan jumlah uang bulanan yang Anda terima</p>
+            <div class="form-group">
+                <label for="initialBalance">Uang Bulanan (Rp)</label>
+                <input type="number" id="initialBalance" class="form-input" placeholder="Contoh: 1000000">
+            </div>
+            <button class="btn btn-primary" onclick="setupComplete()">Mulai Tracking</button>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="mainScreen" class="content hidden">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value income-stat" id="totalIncome">Rp 0</div>
+                    <div class="stat-label">Total Pemasukan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value expense-stat" id="totalExpense">Rp 0</div>
+                    <div class="stat-label">Total Pengeluaran</div>
+                </div>
+            </div>
+
+            <!-- Transaction Form -->
+            <div class="transaction-form">
+                <h3>Tambah Transaksi</h3>
+                <div class="form-group">
+                    <label for="transactionDesc">Deskripsi</label>
+                    <input type="text" id="transactionDesc" class="form-input" placeholder="Contoh: Makan siang">
+                </div>
+                <div class="form-group">
+                    <label for="transactionAmount">Jumlah (Rp)</label>
+                    <input type="number" id="transactionAmount" class="form-input" placeholder="Contoh: 15000">
+                </div>
+                <button class="btn btn-danger" onclick="addExpense()">➖ Pengeluaran</button>
+                <button class="btn btn-success" onclick="addIncome()">➕ Pemasukan</button>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="transaction-history">
+                <h3>Riwayat Transaksi</h3>
+                <div id="transactionList">
+                    <p style="text-align: center; color: #6b7280; margin: 20px 0;">Belum ada transaksi</p>
+                </div>
+            </div>
+
+            <!-- Reset Button -->
+            <button class="btn btn-primary" onclick="resetApp()" style="margin-top: 20px;">🔄 Reset Aplikasi</button>
+        </div>
+    </div>
+
+    <script>
+        // Data storage dalam memory
+        let currentBalance = 0;
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let transactions = [];
+        let isSetup = false;
+
+        // Load data saat aplikasi dimulai
+        window.onload = function() {
+            loadData();
+            if (isSetup) {
+                showMainScreen();
+            }
+        };
+
+        // Simpan data ke memory (dalam implementasi nyata, gunakan localStorage)
+        function saveData() {
+            // Simulasi penyimpanan data
+            // Dalam implementasi nyata, gunakan localStorage
+        }
+
+        // Load data dari memory
+        function loadData() {
+            // Simulasi loading data
+            // Dalam implementasi nyata, load dari localStorage
+        }
+
+        function setupComplete() {
+            const initialAmount = parseFloat(document.getElementById('initialBalance').value);
+            
+            if (!initialAmount || initialAmount <= 0) {
+                alert('Mohon masukkan jumlah uang yang valid!');
+                return;
+            }
+
+            currentBalance = initialAmount;
+            totalIncome = initialAmount;
+            isSetup = true;
+
+            // Add initial transaction
+            transactions.unshift({
+                id: Date.now(),
+                description: 'Uang Bulanan',
+                amount: initialAmount,
+                type: 'income',
+                date: new Date().toLocaleDateString('id-ID')
+            });
+
+            saveData();
+            showMainScreen();
+        }
+
+        function showMainScreen() {
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            updateDisplay();
+        }
+
+        function addExpense() {
+            const desc = document.getElementById('transactionDesc').value.trim();
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+
+            if (!desc) {
+                alert('Mohon masukkan deskripsi transaksi!');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('Mohon masukkan jumlah yang valid!');
+                return;
+            }
+
+            if (amount > currentBalance) {
+                alert('Saldo tidak mencukupi!');
+                return;
+            }
+
+            // Add transaction
+            transactions.unshift({
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                type: 'expense',
+                date: new Date().toLocaleDateString('id-ID')
+            });
+
+            currentBalance -= amount;
+            totalExpense += amount;
+
+            // Clear form
+            document.getElementById('transactionDesc').value = '';
+            document.getElementById('transactionAmount').value = '';
+
+            saveData();
+            updateDisplay();
+        }
+
+        function addIncome() {
+            const desc = document.getElementById('transactionDesc').value.trim();
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+
+            if (!desc) {
+                alert('Mohon masukkan deskripsi transaksi!');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('Mohon masukkan jumlah yang valid!');
+                return;
+            }
+
+            // Add transaction
+            transactions.unshift({
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                type: 'income',
+                date: new Date().toLocaleDateString('id-ID')
+            });
+
+            currentBalance += amount;
+            totalIncome += amount;
+
+            // Clear form
+            document.getElementById('transactionDesc').value = '';
+            document.getElementById('transactionAmount').value = '';
+
+            saveData();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            // Update balance
+            document.getElementById('balanceAmount').textContent = formatCurrency(currentBalance);
+            
+            // Update statistics
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+
+            // Update transaction list
+            const transactionList = document.getElementById('transactionList');
+            
+            if (transactions.length === 0) {
+                transactionList.innerHTML = '<p style="text-align: center; color: #6b7280; margin: 20px 0;">Belum ada transaksi</p>';
+                return;
+            }
+
+            let html = '';
+            transactions.forEach(transaction => {
+                const isExpense = transaction.type === 'expense';
+                const amountClass = isExpense ? 'amount-negative' : 'amount-positive';
+                const sign = isExpense ? '-' : '+';
+
+                html += `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">${transaction.description}</div>
+                            <div class="transaction-date">${transaction.date}</div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${sign}${formatCurrency(transaction.amount)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            transactionList.innerHTML = html;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function resetApp() {
+            if (confirm('Apakah Anda yakin ingin mereset semua data? Tindakan ini tidak dapat dibatalkan.')) {
+                currentBalance = 0;
+                totalIncome = 0;
+                totalExpense = 0;
+                transactions = [];
+                isSetup = false;
+
+                document.getElementById('initialBalance').value = '';
+                document.getElementById('mainScreen').classList.add('hidden');
+                document.getElementById('setupScreen').classList.remove('hidden');
+
+                saveData();
+            }
+        }
+    </script>
+</body>
+</html>
