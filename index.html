@@ -439,6 +439,9 @@
 
             <!-- Reset Button -->
             <button class="btn btn-primary" onclick="showResetModal()" style="margin-top: 20px;">🔄 Reset Aplikasi</button>
+            
+            <!-- Export Button -->
+            <button class="btn" onclick="exportData()" style="margin-top: 10px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">📁 Export Data</button>
         </div>
     </div>
 
@@ -529,18 +532,211 @@
             // Setup auto formatting untuk input fields
             setupAutoFormat('initialBalance', 'initialFormatIndicator');
             setupAutoFormat('transactionAmount', 'amountFormatIndicator');
+            
+            // Tampilkan pesan selamat datang kembali jika ada data tersimpan
+            if (isSetup && transactions.length > 0) {
+                setTimeout(() => {
+                    showWelcomeBackMessage();
+                }, 1000);
+            }
         };
 
-        // Simpan data ke memory (localStorage removed as per requirements)
-        function saveData() {
-            // Data hanya disimpan dalam memory untuk session ini
-            console.log('Data saved to memory');
+        // Pesan selamat datang kembali
+        function showWelcomeBackMessage() {
+            const welcomeMsg = document.createElement('div');
+            welcomeMsg.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 15px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+                z-index: 1002;
+                opacity: 0;
+                transition: all 0.5s ease;
+            `;
+            welcomeMsg.innerHTML = `
+                <div style="font-size: 24px; margin-bottom: 10px;">👋</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">Selamat Datang Kembali!</div>
+                <div style="font-size: 14px; opacity: 0.9;">Data Anda telah dimuat otomatis</div>
+            `;
+            
+            document.body.appendChild(welcomeMsg);
+            
+            setTimeout(() => {
+                welcomeMsg.style.opacity = '1';
+            }, 100);
+            
+            setTimeout(() => {
+                welcomeMsg.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(welcomeMsg);
+                }, 500);
+            }, 3000);
         }
 
-        // Load data dari memory
+        // Auto-save setiap kali ada perubahan data
+        function autoSave() {
+            saveData();
+            // Tampilkan indikator penyimpanan (opsional)
+            showSaveIndicator();
+        }
+
+        // Tampilkan indikator bahwa data telah disimpan
+        function showSaveIndicator() {
+            // Buat elemen indikator jika belum ada
+            let indicator = document.getElementById('saveIndicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'saveIndicator';
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 25px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                    z-index: 1001;
+                    opacity: 0;
+                    transform: translateY(-10px);
+                    transition: all 0.3s ease;
+                    pointer-events: none;
+                `;
+                indicator.innerHTML = '💾 Data tersimpan';
+                document.body.appendChild(indicator);
+            }
+            
+            // Animasi tampil
+            setTimeout(() => {
+                indicator.style.opacity = '1';
+                indicator.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Hilangkan setelah 2 detik
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+                indicator.style.transform = 'translateY(-10px)';
+            }, 2000);
+        }
+
+        // Backup data ke file (fitur tambahan)
+        function exportData() {
+            try {
+                const data = {
+                    currentBalance: currentBalance,
+                    totalIncome: totalIncome,
+                    totalExpense: totalExpense,
+                    transactions: transactions,
+                    isSetup: isSetup,
+                    exportDate: new Date().toISOString(),
+                    appVersion: '2.0'
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `money-tracker-backup-${new Date().getTime()}.json`;
+                link.click();
+                
+                alert('Data berhasil diekspor sebagai file backup!');
+            } catch (error) {
+                console.error('Error mengekspor data:', error);
+                alert('Gagal mengekspor data. Silakan coba lagi.');
+            }
+        }
+
+        // Deteksi jika user akan menutup browser/tab
+        window.addEventListener('beforeunload', function(e) {
+            // Pastikan data tersimpan sebelum keluar
+            saveData();
+            
+            // Tampilkan peringatan jika ada data yang belum tersimpan
+            if (transactions.length > 0) {
+                const message = 'Data Anda telah disimpan otomatis. Yakin ingin keluar?';
+                e.returnValue = message;
+                return message;
+            }
+        });
+
+        // Auto-save setiap 30 detik (sebagai backup)
+        setInterval(function() {
+            if (isSetup) {
+                saveData();
+                console.log('Auto-save: Data disimpan pada', new Date().toLocaleTimeString('id-ID'));
+            }
+        }, 30000); // 30 detik
+
+        // Key untuk localStorage
+        const STORAGE_KEY = 'moneyTrackerData';
+
+        // Simpan data ke localStorage
+        function saveData() {
+            try {
+                const data = {
+                    currentBalance: currentBalance,
+                    totalIncome: totalIncome,
+                    totalExpense: totalExpense,
+                    transactions: transactions,
+                    isSetup: isSetup,
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                console.log('Data berhasil disimpan ke localStorage');
+            } catch (error) {
+                console.error('Error menyimpan data ke localStorage:', error);
+                // Fallback jika localStorage penuh
+                if (error.name === 'QuotaExceededError') {
+                    alert('Penyimpanan penuh! Beberapa data lama akan dihapus.');
+                    // Hapus data lama dan coba simpan lagi
+                    localStorage.clear();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                }
+            }
+        }
+
+        // Load data dari localStorage
         function loadData() {
-            // Data hanya tersedia selama session ini
-            console.log('Data loaded from memory');
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    currentBalance = data.currentBalance || 0;
+                    totalIncome = data.totalIncome || 0;
+                    totalExpense = data.totalExpense || 0;
+                    transactions = data.transactions || [];
+                    isSetup = data.isSetup || false;
+                    
+                    console.log('Data berhasil dimuat dari localStorage');
+                    
+                    // Tampilkan info terakhir disimpan jika ada
+                    if (data.lastSaved) {
+                        const lastSavedDate = new Date(data.lastSaved);
+                        console.log('Data terakhir disimpan:', lastSavedDate.toLocaleString('id-ID'));
+                    }
+                } else {
+                    console.log('Tidak ada data tersimpan sebelumnya, memulai data baru');
+                }
+            } catch (error) {
+                console.error('Error memuat data dari localStorage:', error);
+                // Reset to default values if there's an error
+                currentBalance = 0;
+                totalIncome = 0;
+                totalExpense = 0;
+                transactions = [];
+                isSetup = false;
+                
+                alert('Terjadi kesalahan saat memuat data. Memulai dengan data baru.');
+            }
         }
 
         function setupComplete() {
@@ -611,7 +807,7 @@
             document.getElementById('transactionDesc').value = '';
             document.getElementById('transactionAmount').value = '';
 
-            saveData();
+            autoSave();
             updateDisplay();
         }
 
@@ -646,7 +842,7 @@
             document.getElementById('transactionDesc').value = '';
             document.getElementById('transactionAmount').value = '';
 
-            saveData();
+            autoSave();
             updateDisplay();
         }
 
@@ -721,7 +917,7 @@
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('setupScreen').classList.remove('hidden');
 
-            saveData();
+            autoSave();
             hideResetModal();
         }
 
